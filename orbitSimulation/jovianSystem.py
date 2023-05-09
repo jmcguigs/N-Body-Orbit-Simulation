@@ -8,6 +8,7 @@ jovianSystem: Simulation = Simulation(10)
 # Jupiter - center of the simulation
 jupiter: Body = Body()
 jupiter.mass = 1.8982e27
+jupiter.radius = 69911e3
 jovianSystem.addBody(jupiter)
 
 # Io

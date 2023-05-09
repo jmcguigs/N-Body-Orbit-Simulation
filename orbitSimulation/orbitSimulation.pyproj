@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>95bb3293-7c48-4499-aa00-791594eb4bdf</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>jovianSystem.py</StartupFile>
+    <StartupFile>keplerianSystem.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

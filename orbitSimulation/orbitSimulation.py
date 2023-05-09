@@ -1,4 +1,6 @@
 import numpy as np
+from typing import Callable
+from matplotlib import pyplot as plt
 
 # global variables
 gravitationalConstant: float = 6.6743e-11
@@ -7,11 +9,15 @@ gravitationalConstant: float = 6.6743e-11
 def meanAnomalyFromPeriod(orbitalPeriod: float) -> float:
     return 2 * np.pi / orbitalPeriod
 
+# convert degrees to radians
+def deg2rad(angleDegrees: float) -> float:
+    return np.pi * angleDegrees / 180
 
 # a gravitating body in 3D space
 class Body:
     def __init__(self) -> None:
         self.mass: float = 1
+        self.radius = 1
         self.type: string = "solved"
 
         # column vector of x, dx, ddx, y, dy, ddy, z, dz, ddz
@@ -35,7 +41,7 @@ class Body:
 
         # magnitude of position difference vector
         distance: float = np.sqrt(np.sum(np.square(other.stateVector[[0, 3, 6]] - self.stateVector[[0, 3, 6]])))
-        if distance == 0:
+        if distance == 0 or other.type == 'spacecraft': # assume spacecraft mass is negligible
             return np.zeros(3)
 
         # unit vector pointing from self to other
@@ -57,6 +63,17 @@ class Body:
     # update the body's state vector using the state transition matrix
     def updateState(self, stateTransitionMatrix: np.ndarray, time: float) -> None:
         self.stateVector = stateTransitionMatrix @ self.stateVector
+
+    # check for intersection between two bodies
+    def checkCollision(self, other: 'Body'):
+        distance: float = np.sqrt(np.sum(np.square(other.stateVector[[0, 3, 6]] - self.stateVector[[0, 3, 6]])))
+
+        # objects intersect- collision has occurred
+        if distance > self.radius + other.radius:
+            return False
+
+        else:
+            return True
 
     # set a body's state vector using a kepler orbit
     def setStateFromKepler(self, lonAscendingNode: float, semiMajorAxis: float, eccentricity: float, argOfPeriapsis: float,
@@ -156,7 +173,7 @@ class StaticBody(Body):
 class Spacecraft(Body):
     def __init__(self) -> None:
         super().__init__()
-        self.type = "solved"
+        self.type = "spacecraft"
         self.pointing: np.ndarray = np.array([0, 0, 1])
         self.thrust: float = 0
 
@@ -185,23 +202,23 @@ class Simulation:
         self.bodies: list = []
         self.timeStep: float = timeStep
         self.time: float = 0
-        self.assumeSpacecraftNegligible: bool = True
 
+    # add a body of any type to the simulation
     def addBody(self, body: Body) -> None:
         self.bodies.append(body)
 
     # step the simulation forward in time
     def step(self) -> None:
         bodiesAtPreviousStep: list = self.bodies
-        time += self.timeStep
+        self.time += self.timeStep
 
         # update accelerations in state vectors
         for body in self.bodies:
             # only compute forces/accelerations for solved bodies
-            if body.type != "keplerian":
+            if body.type == "spacecraft" or body.type == "solved":
                 body.getTotalAcceleration(bodiesAtPreviousStep)
 
-            body.updateState(self.stateTransitionMatrix, time)
+            body.updateState(self.stateTransitionMatrix, self.time)
             
 
     # function to generate the state transition matrix for a 3D constant acceleration motion model
@@ -223,3 +240,40 @@ class Simulation:
         ca3d: np.ndarray = np.vstack((np.vstack((r1, r2)), r3))
 
         return ca3d
+
+
+# trace the orbit of a satellite through a multibody system with varied starting parameters
+class MonteCarloOrbitTrace(Simulation):
+    def __init__(self, timeStep) -> None:
+        super().__init__(timeStep)
+        self.variedParameter: string = 'initialVelocity'
+        self.iterationCount: int = 100
+
+    # generate a list of randomized bodies representing the varied object
+    def generateStarts(self, initial: Body) -> list:
+        for i in range(self.iterationCount):
+            newBody: Body = Body()
+            newBody.stateVector = initial.stateVector
+            randVel: np.ndarray = np.random.normal(0, 1e3, 3)
+            newBody.stateVector[[1, 4, 7]] += randVel
+            self.bodies.append(newBody)
+
+    def generateTraces(self, stopTime: float) -> None:
+        steps: int = int(stopTime / self.timeStep)
+        traces: np.ndarray = np.zeros([steps, len(self.bodies), 3])
+        for t in range(steps):
+            super().step()
+            for i, body in enumerate(self.bodies):
+                # get the position of each body and store it to the current time step
+                traces[t, i, :] = body.stateVector[[0, 3, 6]]
+
+        
+        # plot traces
+        for i, body in enumerate(self.bodies):
+            if body.type == 'spacecraft':
+                plt.plot(traces[:, i, 0], traces[:, i, 1], '-b', alpha=0.2)
+
+            else:
+                plt.plot(traces[:, i, 0], traces[:, i, 1], '-g', alpha=1)
+
+        plt.show()
