@@ -70,7 +70,7 @@ jovianSystem.addBody(callisto)
 # spacecraft
 satellite: Body = Spacecraft()
 satellite.mass = 100
-a: float = 800000e3     # way too far for this orbit but interesting
+a: float = 800000e3
 e: float = 0.6
 w: float = deg2rad(0)
 M: float = meanAnomalyFromPeriod(90*60)
