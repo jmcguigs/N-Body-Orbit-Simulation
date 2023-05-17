@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 # c++ function calls
 
-lib = ctypes.CDLL("C:\\Users\\jemcg\\source\\repos\\orbitSimulation\\x64\\Debug\\orbitSimulationDLL.dll")
+lib = ctypes.CDLL("orbitSimulationDLL.dll")
 
 # a pointer to a Body/Simulation object
 cppClassHandle = ctypes.POINTER(ctypes.c_int)
