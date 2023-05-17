@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>95bb3293-7c48-4499-aa00-791594eb4bdf</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>keplerianSystem.py</StartupFile>
+    <StartupFile>Examples\animatedJoivianSystem.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,13 +21,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="jovianSystem.py">
+    <Compile Include="Examples\animatedJoivianSystem.py" />
+    <Compile Include="Examples\jovianSystem.py" />
+    <Compile Include="nBodyOrbitSim.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="keplerianSystem.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="orbitSimulation.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Examples\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
