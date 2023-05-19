@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 # c++ function calls
 
-lib = ctypes.CDLL("orbitSimulationDLL.dll")
+lib = ctypes.CDLL("C:\\Users\\jemcg\\source\\repos\\orbitSimulation\\x64\\Debug\\orbitSimulationDLL.dll")
 
 # a pointer to a Body/Simulation object
 cppClassHandle = ctypes.POINTER(ctypes.c_int)
@@ -70,8 +70,8 @@ def deg2rad(x: float) -> float:
     return np.pi * x / 180
 
 # return mean anomaly from orbital period in seconds
-def meanAnomalyFromPeriod(orbitalPeriod: float) -> float:
-    return 2 * np.pi / orbitalPeriod
+def meanAnomalyFromPeriod(orbitalPeriod: float, timeFromPeriapsis: float) -> float:
+    return (2 * np.pi / orbitalPeriod) * timeFromPeriapsis
 
 
 # python wrapper c++ Body class

@@ -5,7 +5,7 @@ from nBodyOrbitSim import deg2rad, meanAnomalyFromPeriod, BodyKeplerian, BodySol
 
 
 jovianSystem: Simulation = Simulation()
-jovianSystem.setTimeResolution(50.0)
+jovianSystem.setTimeResolution(36.0)  # 36-second time resolution in simulation
 
 # model Jupiter as a static body in the center of the simulation
 jupiter_mass: float = 1.8982e27
@@ -34,6 +34,8 @@ europa_inclination: float = deg2rad(0.5)
 europa_lonAscendingNode: float = deg2rad(184.0)
 europa_semiMajorAxis: float = 671100e3
 europa_eccentricity: float = 0.009
+#europa = BodySolved(europa_mass, europa_radius)
+#europa.setKeplerOrbit(europa_lonAscendingNode, europa_semiMajorAxis, europa_eccentricity, europa_argOfPeriapsis, europa_inclination, europa_meanAnomaly, 0.0, jupiter)
 europa = BodyKeplerian(europa_mass, europa_radius, europa_lonAscendingNode, europa_semiMajorAxis, europa_eccentricity, europa_argOfPeriapsis, europa_inclination, europa_meanAnomaly, jupiter)
 jovianSystem.addBody(europa)
 
@@ -65,17 +67,16 @@ jovianSystem.addBody(callisto)
 # spacecraft
 satellite_radius:float = 2  # keep-out (collision) boundary
 satellite: Spacecraft = Spacecraft(satellite_radius)
-a: float = 400e3
+a: float = 6000e3
 e: float = 0.1
-w: float = deg2rad(270)
-M: float = meanAnomalyFromPeriod(3600*4)
-i: float = deg2rad(0)
-O: float = deg2rad(90)
-
-satellite.setKeplerOrbit(O, a, e, w, i, M, 0.0, callisto)
+w: float = deg2rad(45)
+M: float = deg2rad(90)
+i: float = deg2rad(10)
+O: float = deg2rad(310)
+satellite.setKeplerOrbit(O, a, e, w, i, M, 0.0, io)
 jovianSystem.addBody(satellite)
 
-iterations: int = 1000
+iterations: int = 10000
 
 jPosition: np.ndarray = np.array([[0], [0], [0]])
 
@@ -93,22 +94,29 @@ for i in range(iterations):
     callistoPositions[i, :] = callisto.getPosition()
     satellitePositions[i, :] = satellite.getPosition()
 
+    # step forward 100 time steps - 3600s (1hr) total between graphics updates
     jovianSystem.run(100)
 
 
 def update(i: int) -> None:
     ax.clear()
-    ax.plot(ioPositions[:, 0], ioPositions[:, 1], ioPositions[:, 2], alpha = 0.8, linestyle = ':', label = 'Io')
-    ax.plot(europaPositions[:, 0], europaPositions[:, 1], europaPositions[:, 2], linestyle = ':', alpha = 0.8, label = 'Europa')
-    ax.plot(ganymedePositions[:, 0], ganymedePositions[:, 1], ganymedePositions[:, 2], alpha = 0.8, linestyle = ':',label = 'Ganymede')
-    ax.plot(callistoPositions[:, 0], callistoPositions[:, 1], callistoPositions[:, 2], alpha = 0.8, linestyle = ':',label = 'Callisto')
-    ax.plot(satellitePositions[:, 0], satellitePositions[:, 1], satellitePositions[:, 2], alpha = 0.8, linestyle = ':',label = 'Satellite')
+
+    # plot orbit traces
+    ax.plot(ioPositions[:, 0], ioPositions[:, 1], ioPositions[:, 2], alpha = 0.5, linestyle = '-', label = 'Io')
+    ax.plot(europaPositions[:, 0], europaPositions[:, 1], europaPositions[:, 2], alpha = 0.5, linestyle = '-', label = 'Europa')
+    ax.plot(ganymedePositions[:, 0], ganymedePositions[:, 1], ganymedePositions[:, 2], alpha = 0.5, linestyle = '-',label = 'Ganymede')
+    ax.plot(callistoPositions[:, 0], callistoPositions[:, 1], callistoPositions[:, 2], alpha = 0.5, linestyle = '-',label = 'Callisto')
+    ax.plot(satellitePositions[:, 0], satellitePositions[:, 1], satellitePositions[:, 2], alpha = 0.5, linestyle = '-',label = 'Satellite')
+
+    # plot current body positions
     ax.scatter(jPosition[0], jPosition[1], jPosition[2], label = 'Jupiter')
     ax.scatter(ioPositions[i, 0], ioPositions[i, 1], ioPositions[i, 2], alpha = 0.8, label = 'Io')
     ax.scatter(europaPositions[i, 0], europaPositions[i, 1], europaPositions[i, 2], alpha = 0.8, label = 'Europa')
     ax.scatter(ganymedePositions[i, 0], ganymedePositions[i, 1], ganymedePositions[i, 2], alpha = 0.8, label = 'Ganymede')
     ax.scatter(callistoPositions[i, 0], callistoPositions[i, 1], callistoPositions[i, 2], alpha = 0.8, label = 'Callisto')
     ax.scatter(satellitePositions[i, 0], satellitePositions[i, 1], satellitePositions[i, 2], alpha = 0.8, label = 'Satellite')
+
+    # set equal axis scales
     ax.set_xlim([-2e9, 2e9])
     ax.set_ylim([-2e9, 2e9])
     ax.set_zlim([-2e9, 2e9])
@@ -116,5 +124,5 @@ def update(i: int) -> None:
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 
-ani = FuncAnimation(fig, update, frames=range(100))
+ani = FuncAnimation(fig, update, frames=range(1000))
 plt.show()
